@@ -12,4 +12,4 @@ Technologies used:
 * React Native 
 * Expo 
 
-You can find the app build at: https://expo.dev/@truestayhere/projects/inspiration-flow
+You can find the app build at: https://expo.dev/@truestayhere/inspiration-flow
