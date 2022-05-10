@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Button, Text } from 'react-native';
 import Timer from '../components/Timer';
-import { paper, screen } from './styles';
+import { paper, screen } from '../styles';
 
 
 
@@ -31,7 +31,7 @@ const Pomodoro = () => {
                         title="Break" />
                 </View>
             </View>
-            {startTimer === true && (
+            {startTimer && (
                 <View style={paper}>
                     <Timer isTask={isTask} />
                     <Button title="Close" onPress={() => setStartTimer(false)} />

@@ -4,14 +4,14 @@ import { View, Button, Text, TouchableHighlight, FlatList, TextInput } from 'rea
 import { AntDesign } from '@expo/vector-icons';
 import { addData, dataListener, removeData } from '../database';
 import Folder from '../components/Folder';
-import { paper, screen, folderListItem } from './styles';
+import { paper, screen, folderListItem } from '../styles';
 
 
 const FolderForm = (props) => {
     const [name, setName] = useState("");
 
     return (
-        <View style={{ ...paper, minWidth: '85%', marginTop: 30 }} >
+        <View style={{ ...paper, minWidth: '100%', marginTop: 30 }} >
             <Text style={{ fontSize: 15, alignSelf: 'center' }}>Enter folder name:</Text>
             <TextInput
                 value={name}
@@ -58,7 +58,7 @@ const Directory = ({ navigation }) => {
     }
 
     const deleteFolder = (index) => {
-        let path = 'Folders/' + index;
+        let path = 'folders/' + index;
         removeData(path);
     }
 
@@ -83,7 +83,7 @@ const Directory = ({ navigation }) => {
                             </View>
                         </TouchableHighlight>
                         <TouchableHighlight
-                            style={{ justifyContent: 'center', position: 'absolute', right: 10, marginTop: '5%' }}
+                            style={{ justifyContent: 'center', position: 'absolute', right: 10, top: '30%' }}
                             onPress={() => deleteFolder(index)}
                         >
                             <AntDesign name="close" size={30} color="black" />

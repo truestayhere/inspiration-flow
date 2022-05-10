@@ -2,6 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
 
+// Databse configuration file 
+
 const firebaseConfig = {
     apiKey: 'AIzaSyBL_m_bgymlqtc6f5NHKZdHpIOuNaDO7Mg',
     authDomain: 'inspiration-flow.firebaseapp.com',

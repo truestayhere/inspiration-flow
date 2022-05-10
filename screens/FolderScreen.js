@@ -1,40 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, FlatList, TextInput } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Button, Text, FlatList, TextInput, TouchableHighlight } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { updateData, dataListener } from '../database';
-import { ScrollView } from 'react-native-gesture-handler';
+import { updateData, dataListener, removeData } from '../database';
 import File from '../components/File';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { paper, screen, folderListItem } from '../styles';
+import TextEditor from '../components/TextEditior';
+import FileContent from '../components/FileContent';
 
-
-const fileTypes = [
-    'text',
-    'photo',
-    'video'
-]
 
 const FileForm = (props) => {
-    const [name, setName] = useState("");
-    const [selectedType, setSelectedType] = useState(fileTypes[0]);
+    const [name, setName] = useState(""); // state for the file name 
 
     return (
-        <View>
-            <Text>Enter file name:</Text>
+        <View style={{ ...paper, minWidth: '100%', marginTop: 30 }}>
+            <Text style={{ fontSize: 15, alignSelf: 'center' }}>Enter file name:</Text>
             <TextInput
                 value={name}
                 onChangeText={setName}
                 clearButtonMode='always'
+                style={{ borderWidth: 1, borderRadius: 8, fontSize: 15, padding: 8, marginVertical: 10, minWidth: '60%' }}
             />
-            <Text>Choose file type:</Text>
-            <Picker
-                selectedValue={selectedType}
-                onValueChange={(itemValue, itemIndex) =>
-                    setSelectedType(itemValue)
-                }>
-                {fileTypes.map((item, index) => <Picker.Item key={index} label={item} value={item} />)}
-            </Picker>
-            <Button title="Submit" onPress={() => props.returnFunc(name, selectedType)} />
+            <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                <Button title="Submit" onPress={() => props.returnFunc(name)} />
+                <Button title="Cancel" onPress={() => props.closeFunc()} />
+            </View>
         </View>);
 
 }
@@ -43,6 +32,9 @@ const FileForm = (props) => {
 const FolderScreen = ({ route, navigation }) => {
     const [showForm, setShowForm] = useState(false);
     const [files, setFiles] = useState([]); // array for files in the folder
+    const [fileIndex, setFileIndex] = useState(); // state for the index of the file 
+    const [showEditor, setShowEditor] = useState(false);
+    const [showContent, setShowContent] = useState(false);
 
 
     useEffect(() => {
@@ -52,8 +44,9 @@ const FolderScreen = ({ route, navigation }) => {
     }, []);
 
 
-    const openTextEditor = () => {
-
+    const deleteFile = (fileIndex) => {
+        let path = 'folders/' + route.params.index + '/files/' + fileIndex;
+        removeData(path);
     }
 
 
@@ -63,13 +56,10 @@ const FolderScreen = ({ route, navigation }) => {
         return true;
     }
 
-    const addFile = (newName, type) => {
+    const addFile = (newName) => {
         if (checkFileName(newName)) {
             setShowForm(false);
-            const file = new File(newName, type);
-            if (type === 'photo') launchImageLibrary((img) => file.content = img);
-            else if (type === 'video') launchImageLibrary((vid) => file.content = vid);
-            else openTextEditor();
+            const file = new File(newName);
             files.push(file);
             updateData('folders/' + route.params.index, { files });
         }
@@ -78,22 +68,73 @@ const FolderScreen = ({ route, navigation }) => {
         }
     }
 
+    const editFile = (index) => {
+        setFileIndex(index);
+        setShowEditor(true);
+    }
+
+    const saveChanges = (text) => {
+        setShowEditor(false);
+        files[fileIndex].content = text;
+        updateData('folders/' + route.params.index, { files });
+    }
+
+    const showFileContent = (index) => {
+        setFileIndex(index);
+        setShowContent(true);
+    }
+
+
     return (
-        <View>
+        <View style={screen}>
+            <View>
+                {!showForm && !showEditor && !showContent &&
+                    <TouchableHighlight style={{ marginTop: 20 }} onPress={() => setShowForm(true)}>
+                        <AntDesign name="addfile" size={50} color="black" />
+                    </TouchableHighlight>}
+                {showForm && !showEditor && <FileForm returnFunc={(name, type) => addFile(name, type)} closeFunc={() => setShowForm(false)} />}
+            </View>
+            {showEditor && !showContent &&
+                <View style={{ alignItems: 'center' }}>
+                    <TextEditor returnFunc={(text) => saveChanges(text)} content={files[fileIndex].content} />
+                    <Button title='Cancel'
+                        onPress={() => setShowEditor(false)} />
+                </View>
+            }
+            {showContent && !showEditor &&
+                < View style={{ alignItems: 'center' }}>
+                    <FileContent content={files[fileIndex].content} />
+                    <Button title='Cancel'
+                        onPress={() => setShowContent(false)} />
+                </View>}
             <FlatList
                 data={files}
+                style={{ padding: 10, minWidth: '100%', marginLeft: 40, marginBottom: 40 }}
                 renderItem={({ item, index }) =>
-                    <View>
-                        <AntDesign name="file1" size={24} color="black" />
-                        <Text>{item.name}</Text>
+                    <View style={folderListItem}>
+                        <TouchableHighlight onPress={() => showFileContent(index)}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <AntDesign name="file1" size={50} color="black" />
+                                <Text style={{ fontSize: 15 }}> {item.name}</Text>
+                            </View>
+                        </TouchableHighlight>
+                        <View style={{ justifyContent: 'center', position: 'absolute', right: 10, top: '30%', flexDirection: 'row' }}>
+                            <TouchableHighlight
+                                onPress={() => editFile(index)}
+                            >
+                                <AntDesign name="edit" size={30} color="black" />
+                            </TouchableHighlight>
+                            <TouchableHighlight
+                                onPress={() => deleteFile(index)}
+                            >
+                                <AntDesign name="close" size={30} color="black" />
+                            </TouchableHighlight>
+                        </View>
                     </View>}
             />
-            <ScrollView>
-                <Button title='Add file' onPress={() => setShowForm(true)} />
-                {showForm && <FileForm returnFunc={(name, type) => addFile(name, type)} />}
-            </ScrollView>
-        </View>
+        </View >
     );
+
 };
 
 export default FolderScreen;

@@ -1,10 +1,9 @@
 
-
+// class for the file in the firebase
 export default class File {
 
-    constructor(name, type) {
+    constructor(name) {
         this.name = name;
-        this.type = type
         this.content = [];
     }
 
@@ -14,10 +13,6 @@ export default class File {
 
     setName(newName) {
         this.name = newName;
-    }
-
-    getType() {
-        return this.type;
     }
 
     getContent() {
